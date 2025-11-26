@@ -1,0 +1,119 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="framework.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include=".\Share\jni_util.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include=".\Share\Configure.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include=".\Share\Utilities.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include=".\Share\SoundDefs.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include=".\Share\PlatformMidi.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include=".\Windows\PLATFORM_API_WinOS_Charset_Util.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include=".\Windows\PLATFORM_API_WinOS_Util.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include=".\Share\Ports.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="stdafx.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="targetver.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="dllmain.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pch.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include=".\Share\MidiInDevice.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include=".\Share\MidiInDeviceProvider.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include=".\Share\MidiOutDevice.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include=".\Share\MidiOutDeviceProvider.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include=".\Share\PlatformMidi.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include=".\Share\DirectAudioDevice.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include=".\Share\DirectAudioDeviceProvider.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include=".\Windows\PLATFORM_API_WinOS_DirectSound.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include=".\Windows\PLATFORM_API_WinOS_Charset_Util.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include=".\Windows\PLATFORM_API_WinOS_MidiIn.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include=".\Windows\PLATFORM_API_WinOS_MidiOut.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include=".\Windows\PLATFORM_API_WinOS_Ports.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include=".\Windows\PLATFORM_API_WinOS_Util.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include=".\Share\PortMixerProvider.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include=".\Share\Utilities.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Share\Test.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include=".\Share\PortMixer.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Share\Platform.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="CSound.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+</Project>

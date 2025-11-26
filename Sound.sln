@@ -1,0 +1,36 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.1.32328.378
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sound", "Sound\Sound.csproj", "{0D3C1050-89C0-4B4C-9F45-0F20EFB972C7}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{F39A3DD4-700B-42A7-9F96-AFEC7F09F6BE}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x86 = Debug|x86
+		Release|x86 = Release|x86
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{0D3C1050-89C0-4B4C-9F45-0F20EFB972C7}.Debug|x86.ActiveCfg = Debug|x86
+		{0D3C1050-89C0-4B4C-9F45-0F20EFB972C7}.Debug|x86.Build.0 = Debug|x86
+		{0D3C1050-89C0-4B4C-9F45-0F20EFB972C7}.Release|x86.ActiveCfg = Release|x86
+		{0D3C1050-89C0-4B4C-9F45-0F20EFB972C7}.Release|x86.Build.0 = Release|x86
+		{0D3C1050-89C0-4B4C-9F45-0F20EFB972C7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0D3C1050-89C0-4B4C-9F45-0F20EFB972C7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0D3C1050-89C0-4B4C-9F45-0F20EFB972C7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0D3C1050-89C0-4B4C-9F45-0F20EFB972C7}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {D9C71BB3-36F0-4E5C-BA01-BA894384CB2C}
+	EndGlobalSection
+EndGlobal

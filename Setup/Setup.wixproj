@@ -1,0 +1,18 @@
+<Project Sdk="WixToolset.Sdk/6.0.2">
+  <PropertyGroup>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+  </PropertyGroup>
+  <PropertyGroup>
+    <OutputName>SoundLib</OutputName>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
+    <OutputPath>msi\</OutputPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="SoundLib.wxs" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="WixToolset.UI.wixext" Version="6.*" />
+    <PackageReference Include="WixToolset.NetFx.wixext" Version="6.*" />
+  </ItemGroup>
+</Project>

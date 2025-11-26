@@ -1,0 +1,137 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.0;net8.0;net462</TargetFrameworks>
+    <Platforms>AnyCPU</Platforms>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    <LangVersion>latest</LangVersion>
+<!--
+	<GenerateDocumentationFile>true</GenerateDocumentationFile>
+-->
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <Deterministic>false</Deterministic>
+    <GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>    
+	<SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>sound.snk</AssemblyOriginatorKeyFile>
+    <PackageProjectUrl>https://github.com/harborsiem/Sound</PackageProjectUrl>
+    <NeutralLanguage>en-US</NeutralLanguage>
+    <RepositoryType>Git</RepositoryType>
+	<PackageReadmeFile>PackageReadme.md</PackageReadmeFile>
+	<PackageReleaseNotes></PackageReleaseNotes>
+
+    <PackageId>Sound</PackageId>
+    <Product>.NET Sound Library</Product>
+    <Version>25.0.0</Version>
+    <AssemblyVersion>25.0.0</AssemblyVersion>
+    <Authors>Hartmut Borkenhagen</Authors>
+    <Company>Harborsiem</Company>
+    <PackageIcon>CDandNote.png</PackageIcon>
+	<Title>.NET Sound Library for Windows</Title>
+    <Description>.NET Sound Library is similar to the OpenJDK sound.
+	</Description>
+    <PackageTags>Sound;Audio;Midi;Windows;.NET</PackageTags>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'">
+    <NoWarn>1701;1702;CS3021</NoWarn>
+    <DefineConstants>TRACE</DefineConstants>
+	<PlatformTarget>x86</PlatformTarget>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
+    <DefineConstants>TRACE;DEBUG</DefineConstants>
+	<PlatformTarget>x86</PlatformTarget>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <NoWarn>1701;1702;CS3021</NoWarn>
+    <DefineConstants>TRACE</DefineConstants>
+	<PlatformTarget>AnyCPU</PlatformTarget>
+<!--
+    <DocumentationFile>.\bin\Release\net462\Sound.xml</DocumentationFile>
+-->
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DefineConstants>TRACE;DEBUG</DefineConstants>
+	<PlatformTarget>AnyCPU</PlatformTarget>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <PackageLicenseExpression>GPL-2.0-only</PackageLicenseExpression>
+  </PropertyGroup>
+  
+  <ItemGroup>
+    <Content Include="..\Setup\msi\SoundLib.msi">
+      <Pack>true</Pack>
+      <PackagePath>.\lib\</PackagePath>
+    </Content>
+  </ItemGroup>
+  
+  <ItemGroup>
+    <Content Include="..\CSound\Release\CSound.dll">
+      <Pack>true</Pack>
+      <PackagePath>.\lib\x86\</PackagePath>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <PackageCopyToOutput>true</PackageCopyToOutput>
+      <TargetPath>.\x86\CSound.dll</TargetPath>
+    </Content>
+  </ItemGroup>
+  
+  <ItemGroup>
+    <Content Include="..\CSound\x64\Release\CSound.dll">
+      <Pack>true</Pack>
+      <PackagePath>.\lib\x64\</PackagePath>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <PackageCopyToOutput>true</PackageCopyToOutput>
+      <TargetPath>.\x64\CSound.dll</TargetPath>
+    </Content>
+  </ItemGroup>
+  
+  <ItemGroup>
+    <Content Include="..\Sound\config\sound.config">
+      <Pack>true</Pack>
+      <PackagePath>.\lib\</PackagePath>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <PackageCopyToOutput>true</PackageCopyToOutput>
+      <TargetPath>sound.config</TargetPath>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="CDandNote.png" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="common\JavaSoundAudioClipDelegate.cs" />
+  </ItemGroup>
+  
+  <ItemGroup Condition="'$(TargetFramework)'=='net462'">
+    <Reference Include="System.Net.Http" />
+  </ItemGroup>
+ 
+  <ItemGroup>
+    <None Include=".\PackageReadme.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+ 
+  <ItemGroup>
+    <AdditionalFiles Include="NativeMethods.txt" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <MicrosoftWindowsCsWin32PackageVersion>0.3.252</MicrosoftWindowsCsWin32PackageVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Windows.CsWin32" Version="$(MicrosoftWindowsCsWin32PackageVersion)" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Memory" Version="4.6.3" />
+  </ItemGroup>
+
+</Project>

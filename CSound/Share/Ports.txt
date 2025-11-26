@@ -1,0 +1,22 @@
+PORT_GetControls => createMuxControl
+
+                 => (createLineControls
+				 => addCompoundControl)
+                 
+				 => (createLineControls
+				 => addAllControls)
+				 
+                 => (createLineControls
+				 => addCompoundControl)
+				 
+				 
+createMuxControl (multiple Boolean)
+
+createLineControls => createPortControl
+                   => createPortControl
+
+createPortControl (Boolean or Float or Float)
+
+		
+addCompoundControl => (Compound) + Add
+addAllControls => multiple Add

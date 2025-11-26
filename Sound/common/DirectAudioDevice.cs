@@ -1,0 +1,1372 @@
+#undef NoNative
+//#define NoNative
+/*
+ * Copyright (c) 2002, 2024, Oracle and/or its affiliates. All rights reserved.
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+ *
+ * This code is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License version 2 only, as
+ * published by the Free Software Foundation.  Oracle designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Oracle in the LICENSE file that accompanied this code.
+ *
+ * This code is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * version 2 for more details (a copy is included in the LICENSE file that
+ * accompanied this code).
+ *
+ * You should have received a copy of the GNU General Public License version
+ * 2 along with this work; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ * Please contact Oracle, 500 Oracle Parkway, Redwood Shores, CA 94065 USA
+ * or visit www.oracle.com if you need additional information or have any
+ * questions.
+ */
+
+//package com.sun.media.sound;
+
+//import java.io.ByteArrayOutputStream;
+//import java.io.IOException;
+//import java.util.Vector;
+
+//import javax.sound.sampled.*;
+
+using System;
+using System.Collections.Generic;
+using System.Text;
+using System.IO;
+using System.Threading;
+using System.Globalization;
+using SystemX.Addon;
+using SystemX.Sound.Sampled;
+
+namespace SystemX.Media.Sound {
+// IDEA:
+// Use java.util.concurrent.Semaphore,
+// java.util.concurrent.locks.ReentrantLock and other new classes/methods
+// to improve this class's thread safety.
+
+/**
+ * A Mixer which provides direct access to audio devices.
+ *
+ * @author Florian Bomers
+ */
+    internal sealed partial class DirectAudioDevice : AbstractMixer {
+
+        private const int CLIP_BUFFER_TIME = 1000; // in milliseconds
+
+        private const int DEFAULT_LINE_BUFFER_TIME = 500; // in milliseconds
+
+        internal DirectAudioDevice(DirectAudioDeviceProvider.DirectAudioDeviceInfo portMixerInfo)
+            // pass in Line.Info, mixer, controls
+            : base(portMixerInfo,              // Mixer.Info
+                  null,                       // Control[]
+                  null,                       // Line.Info[] sourceLineInfo
+                  null) {                      // Line.Info[] targetLineInfo
+            // source lines
+            DirectDLI srcLineInfo = createDataLineInfo(true);
+            if (srcLineInfo != null) {
+                sourceLineInfo = new Line.Info[2];
+                // SourcedataLine
+                sourceLineInfo[0] = srcLineInfo;
+                // Clip
+                sourceLineInfo[1] = new DirectDLI(typeof(IClip), srcLineInfo.getFormats(),
+                                  srcLineInfo.getHardwareFormats(),
+                                  32, // arbitrary minimum buffer size
+                                  AudioSystem.NOT_SPECIFIED);
+            } else {
+                sourceLineInfo = new Line.Info[0];
+            }
+
+            // TargetDataLine
+            DataLine.Info dstLineInfo = createDataLineInfo(false);
+            if (dstLineInfo != null) {
+                targetLineInfo = new Line.Info[1];
+                targetLineInfo[0] = dstLineInfo;
+            } else {
+                targetLineInfo = new Line.Info[0];
+            }
+        }
+
+        private DirectDLI createDataLineInfo(bool isSource) {
+            List<AudioFormat> formats = new List<AudioFormat>(); //Vector
+            AudioFormat[] hardwareFormatArray = null;
+            AudioFormat[] formatArray = null;
+
+            lock (formats) {
+                nGetFormats(getMixerIndex(), getDeviceID(),
+                    isSource /* true:SourceDataLine/Clip, false:TargetDataLine */,
+                    formats);
+                if (formats.Count > 0) {
+                    int size = formats.Count;
+                    int formatArraySize = size;
+                    hardwareFormatArray = new AudioFormat[size];
+                    for (int i = 0; i < size; i++) {
+                        AudioFormat format = formats[i];
+                        hardwareFormatArray[i] = format;
+                        int bits = format.getSampleSizeInBits();
+                        bool isSigned = format.getEncoding().Equals(AudioFormat.Encoding.PCM_SIGNED);
+                        bool isUnsigned = format.getEncoding().Equals(AudioFormat.Encoding.PCM_UNSIGNED);
+                        if ((isSigned || isUnsigned)) {
+                            // will insert a magically converted format here
+                            formatArraySize++;
+                        }
+                    }
+                    formatArray = new AudioFormat[formatArraySize];
+                    int formatArrayIndex = 0;
+                    for (int i = 0; i < size; i++) {
+                        AudioFormat format = hardwareFormatArray[i];
+                        formatArray[formatArrayIndex++] = format;
+                        int bits = format.getSampleSizeInBits();
+                        bool isSigned = format.getEncoding().Equals(AudioFormat.Encoding.PCM_SIGNED);
+                        bool isUnsigned = format.getEncoding().Equals(AudioFormat.Encoding.PCM_UNSIGNED);
+                        // add convenience formats (automatic conversion)
+                        if (bits == 8) {
+                            // add the other signed'ness for 8-bit
+                            if (isSigned) {
+                                formatArray[formatArrayIndex++] =
+                                    new AudioFormat(AudioFormat.Encoding.PCM_UNSIGNED,
+                                    format.getSampleRate(), bits, format.getChannels(),
+                                    format.getFrameSize(), format.getSampleRate(),
+                                    format.isBigEndian());
+                            } else if (isUnsigned) {
+                                formatArray[formatArrayIndex++] =
+                                    new AudioFormat(AudioFormat.Encoding.PCM_SIGNED,
+                                    format.getSampleRate(), bits, format.getChannels(),
+                                    format.getFrameSize(), format.getSampleRate(),
+                                    format.isBigEndian());
+                            }
+                        } else if (bits > 8 && (isSigned || isUnsigned)) {
+                            // add the other endian'ness for more than 8-bit
+                            formatArray[formatArrayIndex++] =
+                                    new AudioFormat(format.getEncoding(),
+                                                      format.getSampleRate(), bits,
+                                                      format.getChannels(),
+                                              format.getFrameSize(),
+                                              format.getSampleRate(),
+                                              !format.isBigEndian());
+                        }
+                        //System.out.println("Adding "+v.get(v.size()-1));
+                    }
+                }
+            }
+            // todo: find out more about the buffer size ?
+            if (formatArray != null) {
+                return new DirectDLI(isSource ? typeof(ISourceDataLine) : typeof(ITargetDataLine),
+                         formatArray, hardwareFormatArray,
+                         32, // arbitrary minimum buffer size
+                         AudioSystem.NOT_SPECIFIED);
+            }
+            return null;
+        }
+
+        // ABSTRACT MIXER: ABSTRACT METHOD IMPLEMENTATIONS
+
+        public override ILine getLine(Line.Info info) {
+            Line.Info fullInfo = getLineInfo(info);
+            if (fullInfo == null) {
+                throw new ArgumentException("Line unsupported: " + info);
+            }
+            if (fullInfo is DataLine.Info) {
+
+                DataLine.Info dataLineInfo = (DataLine.Info)fullInfo;
+                AudioFormat lineFormat;
+                int lineBufferSize = AudioSystem.NOT_SPECIFIED;
+
+                // if a format is specified by the info class passed in, use it.
+                // otherwise use a format from fullInfo.
+
+                AudioFormat[] supportedFormats = null;
+
+                if (info is DataLine.Info) {
+                    supportedFormats = ((DataLine.Info)info).getFormats();
+                    lineBufferSize = ((DataLine.Info)info).getMaxBufferSize();
+                }
+
+                if ((supportedFormats == null) || (supportedFormats.Length == 0)) {
+                    // use the default format
+                    lineFormat = null;
+                } else {
+                    // use the last format specified in the line.info object passed
+                    // in by the app
+                    lineFormat = supportedFormats[supportedFormats.Length - 1];
+
+                    // if something is not specified, use default format
+                    if (!Toolkit.isFullySpecifiedPCMFormat(lineFormat)) {
+                        lineFormat = null;
+                    }
+                }
+
+                if (dataLineInfo.getLineClass().IsAssignableFrom(typeof(DirectSDL))) {
+                    return new DirectSDL(dataLineInfo, lineFormat, lineBufferSize, this);
+                }
+                if (dataLineInfo.getLineClass().IsAssignableFrom(typeof(DirectClip))) {
+                    return new DirectClip(dataLineInfo, lineFormat, lineBufferSize, this);
+                }
+                if (dataLineInfo.getLineClass().IsAssignableFrom(typeof(DirectTDL))) {
+                    return new DirectTDL(dataLineInfo, lineFormat, lineBufferSize, this);
+                }
+            }
+            throw new ArgumentException("Line unsupported: " + info);
+        }
+
+        public override int getMaxLines(Line.Info info) {
+            Line.Info fullInfo = getLineInfo(info);
+
+            // if it's not supported at all, return 0.
+            if (fullInfo == null) {
+                return 0;
+            }
+
+            if (fullInfo is DataLine.Info) {
+                // DirectAudioDevices should mix !
+                return getMaxSimulLines();
+            }
+
+            return 0;
+        }
+
+        protected override void implOpen() {
+        }
+
+        protected override void implClose() {
+        }
+
+        protected override void implStart() {
+        }
+
+        protected override void implStop() {
+        }
+
+        int getMixerIndex() {
+            return ((DirectAudioDeviceProvider.DirectAudioDeviceInfo)getMixerInfo()).getIndex();
+        }
+
+        int getDeviceID() {
+            return ((DirectAudioDeviceProvider.DirectAudioDeviceInfo)getMixerInfo()).getDeviceID();
+        }
+
+        int getMaxSimulLines() {
+            return ((DirectAudioDeviceProvider.DirectAudioDeviceInfo)getMixerInfo()).getMaxSimulLines();
+        }
+
+        private static void addFormat(IList<AudioFormat> v, int bits, int frameSizeInBytes, int channels, float sampleRate,
+                      int encoding, bool signed, bool bigEndian) { //Vector
+            AudioFormat.Encoding enc = null;
+            switch (encoding) {
+                case PCM:
+                    enc = signed ? AudioFormat.Encoding.PCM_SIGNED : AudioFormat.Encoding.PCM_UNSIGNED;
+                    break;
+                case ULAW:
+                    enc = AudioFormat.Encoding.ULAW;
+                    if (bits != 8) {
+                        if (Printer.err) Printer.Err("DirectAudioDevice.addFormat called with ULAW, but bitsPerSample=" + bits);
+                        bits = 8; frameSizeInBytes = channels;
+                    }
+                    break;
+                case ALAW:
+                    enc = AudioFormat.Encoding.ALAW;
+                    if (bits != 8) {
+                        if (Printer.err) Printer.Err("DirectAudioDevice.addFormat called with ALAW, but bitsPerSample=" + bits);
+                        bits = 8; frameSizeInBytes = channels;
+                    }
+                    break;
+            }
+            if (enc == null) {
+                if (Printer.err) Printer.Err("DirectAudioDevice.addFormat called with unknown encoding: " + encoding);
+                return;
+            }
+            if (frameSizeInBytes <= 0) {
+                if (channels > 0) {
+                    frameSizeInBytes = ((bits + 7) / 8) * channels;
+                } else {
+                    frameSizeInBytes = AudioSystem.NOT_SPECIFIED;
+                }
+            }
+            v.Add(new AudioFormat(enc, sampleRate, bits, channels, frameSizeInBytes, sampleRate, bigEndian));
+        }
+
+        /*protected*/
+        internal static AudioFormat getSignOrEndianChangedFormat(AudioFormat format) {
+            bool isSigned = format.getEncoding().Equals(AudioFormat.Encoding.PCM_SIGNED);
+            bool isUnsigned = format.getEncoding().Equals(AudioFormat.Encoding.PCM_UNSIGNED);
+            if (format.getSampleSizeInBits() > 8 && isSigned) {
+                // if this is PCM_SIGNED and 16-bit or higher, then try with endian-ness magic
+                return new AudioFormat(format.getEncoding(),
+                           format.getSampleRate(), format.getSampleSizeInBits(), format.getChannels(),
+                           format.getFrameSize(), format.getFrameRate(), !format.isBigEndian());
+            } else if (format.getSampleSizeInBits() == 8 && (isSigned || isUnsigned)) {
+                // if this is PCM and 8-bit, then try with signed-ness magic
+                return new AudioFormat(isSigned ? AudioFormat.Encoding.PCM_UNSIGNED : AudioFormat.Encoding.PCM_SIGNED,
+                           format.getSampleRate(), format.getSampleSizeInBits(), format.getChannels(),
+                           format.getFrameSize(), format.getFrameRate(), format.isBigEndian());
+            }
+            return null;
+        }
+
+        /**
+         * Private inner class for the DataLine.Info objects
+         * adds a little magic for the isFormatSupported so
+         * that the automagic conversion of endianness and sign
+         * does not show up in the formats array.
+         * I.e. the formats array contains only the formats
+         * that are really supported by the hardware,
+         * but isFormatSupported() also returns true
+         * for formats with wrong endianness.
+         */
+        private sealed class DirectDLI : DataLine.Info {
+            AudioFormat[] hardwareFormats;
+
+            internal DirectDLI(Type clazz, AudioFormat[] formatArray,
+                      AudioFormat[] hardwareFormatArray,
+                      int minBuffer, int maxBuffer)
+                : base(clazz, formatArray, minBuffer, maxBuffer) {
+                this.hardwareFormats = hardwareFormatArray;
+            }
+
+            public bool isFormatSupportedInHardware(AudioFormat format) {
+                if (format == null) return false;
+                for (int i = 0; i < hardwareFormats.Length; i++) {
+                    if (format.matches(hardwareFormats[i])) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+
+            /*public bool isFormatSupported(AudioFormat format) {
+             *   return isFormatSupportedInHardware(format)
+             *      || isFormatSupportedInHardware(getSignOrEndianChangedFormat(format));
+             *}
+             */
+
+            internal AudioFormat[] getHardwareFormats() {
+                return hardwareFormats;
+            }
+        }
+
+        /**
+         * Private inner class as base class for direct lines.
+         */
+        private class DirectDL : AbstractDataLine, EventDispatcher.ILineMonitor {
+            protected internal readonly int mixerIndex;
+            protected internal readonly int deviceID;
+            protected internal DAUDIO_InfoPtr id; //DAUDIO_Info
+            protected internal int waitTime;
+            protected internal volatile bool flushing;
+            protected internal readonly bool isSource;         // true for SourceDataLine, false for TargetDataLine
+            protected internal long bytePosition; //volatile 
+            protected internal volatile bool doIO;     // true in between start() and stop() calls
+            protected internal volatile bool stoppedWritten; // true if a write occurred in stopped state
+            protected internal volatile bool drained; // set to true when drain function returns, set to false in write()
+            protected internal bool monitoring;
+
+            // if native needs to manually swap samples/convert sign, this
+            // is set to the framesize
+            protected internal int softwareConversionSize = 0;
+            protected internal AudioFormat hardwareFormat;
+
+            private readonly Gain gainControl; // = new Gain(this);
+            private readonly Mute muteControl; // = new Mute(this);
+            private readonly Balance balanceControl; // = new Balance(this);
+            private readonly Pan panControl; // = new Pan(this);
+            private float leftGain, rightGain;
+            protected internal volatile bool noService; // do not run the nService method
+
+            // Guards all native calls.
+            protected internal readonly Object lockNative = new Object();
+
+            protected internal DirectDL(DataLine.Info info,
+                       DirectAudioDevice mixer,
+                       AudioFormat format,
+                       int bufferSize,
+                       int mixerIndex,
+                       int deviceID,
+                       bool isSource)
+                : base(info, mixer, null, format, bufferSize) {
+                this.mixerIndex = mixerIndex;
+                this.deviceID = deviceID;
+                this.waitTime = 10; // 10 milliseconds default wait time
+                this.isSource = isSource;
+                gainControl = new Gain(this);
+                muteControl = new Mute(this);
+                balanceControl = new Balance(this);
+                panControl = new Pan(this);
+            }
+
+            public override void implOpen(AudioFormat format, int bufferSize) {
+                // $$fb part of fix for 4679187: Clip.open() throws unexpected Exceptions
+                Toolkit.isFullySpecifiedAudioFormat(format);
+
+                int encoding = PCM;
+                if (format.getEncoding().Equals(AudioFormat.Encoding.ULAW)) {
+                    encoding = ULAW;
+                } else if (format.getEncoding().Equals(AudioFormat.Encoding.ALAW)) {
+                    encoding = ALAW;
+                }
+
+                if (bufferSize <= AudioSystem.NOT_SPECIFIED) {
+                    bufferSize = (int)Toolkit.millis2bytes(format, DEFAULT_LINE_BUFFER_TIME);
+                }
+
+                DirectDLI ddli = null;
+                if (info is DirectDLI) {
+                    ddli = (DirectDLI)info;
+                }
+
+                /* set up controls */
+                if (isSource) {
+                    if (!format.getEncoding().Equals(AudioFormat.Encoding.PCM_SIGNED)
+                        && !format.getEncoding().Equals(AudioFormat.Encoding.PCM_UNSIGNED)) {
+                        // no controls for non-PCM formats */
+                        controls = new Control[0];
+                    } else if (format.getChannels() > 2
+                         || format.getSampleSizeInBits() > 16) {
+                        // no support for more than 2 channels or more than 16 bits
+                        controls = new Control[0];
+                    } else {
+                        if (format.getChannels() == 1) {
+                            controls = new Control[2];
+                        } else {
+                            controls = new Control[4];
+                            controls[2] = balanceControl;
+                            /* to keep compatibility with apps that rely on
+                             * MixerSourceLine's PanControl
+                             */
+                            controls[3] = panControl;
+                        }
+                        controls[0] = gainControl;
+                        controls[1] = muteControl;
+                    }
+                }
+                hardwareFormat = format;
+
+                /* some magic to account for not-supported endianness or signed-ness */
+                softwareConversionSize = 0;
+                if (ddli != null && !ddli.isFormatSupportedInHardware(format)) {
+                    AudioFormat newFormat = getSignOrEndianChangedFormat(format);
+                    if (ddli.isFormatSupportedInHardware(newFormat)) {
+                        // apparently, the new format can be used.
+                        hardwareFormat = newFormat;
+                        // So do endian/sign conversion in software
+                        softwareConversionSize = format.getFrameSize() / format.getChannels();
+                    }
+                }
+
+                // align buffer to full frames
+                bufferSize = (bufferSize / format.getFrameSize()) * format.getFrameSize();
+
+                id = nOpen(mixerIndex, deviceID, isSource,
+                       encoding,
+                       hardwareFormat.getSampleRate(),
+                       hardwareFormat.getSampleSizeInBits(),
+                       hardwareFormat.getFrameSize(),
+                       hardwareFormat.getChannels(),
+                       hardwareFormat.getEncoding().Equals(
+                           AudioFormat.Encoding.PCM_SIGNED),
+                       hardwareFormat.isBigEndian(),
+                       bufferSize);
+
+                if (id.IsNull) {
+                    // TODO: nicer error messages...
+                    throw new LineUnavailableException(
+                        "line with format " + format + " not supported.");
+                }
+
+                this.bufferSize = nGetBufferSize(id, isSource);
+                if (this.bufferSize < 1) {
+                    // this is an error!
+                    this.bufferSize = bufferSize;
+                }
+                this.format = format;
+                // wait time = 1/4 of buffer time
+                waitTime = (int)Toolkit.bytes2millis(format, this.bufferSize) / 4;
+                if (waitTime < 10) {
+                    waitTime = 1;
+                } else if (waitTime > 1000) {
+                    // we have seen large buffer sizes!
+                    // never wait for more than a second
+                    waitTime = 1000;
+                }
+                Interlocked.Exchange(ref bytePosition, 0);
+                stoppedWritten = false;
+                doIO = false;
+                calcVolume();
+            }
+
+            public override void implStart() {
+                lock (lockNative) {
+                    nStart(id, isSource);
+                }
+                // check for monitoring/servicing
+                monitoring = requiresServicing();
+                if (monitoring) {
+                    getEventDispatcher().addLineMonitor(this);
+                }
+
+                lock (m_lock) {
+                    doIO = true;
+
+                    // need to set Active and Started
+                    // note: the current API always requires that
+                    //       Started and Active are set at the same time...
+                    if (isSource && stoppedWritten) {
+                        setStarted(true);
+                        setActive(true);
+                    }
+                }
+            }
+
+            public override void implStop() {
+                if (monitoring) {
+                    getEventDispatcher().removeLineMonitor(this);
+                    monitoring = false;
+                }
+                lock (lockNative) {
+                    nStop(id, isSource);
+                }
+
+                // wake up any waiting threads
+                lock (m_lock) {
+                    // need to set doIO to false before notifying the
+                    // read/write thread, that's why isStartedRunning()
+                    // cannot be used
+                    doIO = false;
+                    setActive(false);
+                    setStarted(false);
+                    Monitor.PulseAll(m_lock);
+                }
+                stoppedWritten = false;
+            }
+
+            public override void implClose() {
+                // be sure to remove this monitor
+                if (monitoring) {
+                    getEventDispatcher().removeLineMonitor(this);
+                    monitoring = false;
+                }
+
+                doIO = false;
+                DAUDIO_InfoPtr oldID = id;
+                id = DAUDIO_InfoPtr.Null;
+                lock (lockNative) {
+                    nClose(oldID, isSource);
+                }
+                Interlocked.Exchange(ref bytePosition, 0);
+                softwareConversionSize = 0;
+            }
+
+            // METHOD OVERRIDES
+
+            public override int available() {
+                if (id.IsNull) {
+                    return 0;
+                }
+                int a;
+                lock (lockNative) {
+                    a = nAvailable(id, isSource);
+                }
+                return a;
+            }
+
+            public override void drain() {
+                noService = true;
+                // additional safeguard against draining forever
+                // this occurred on Solaris 8 x86, probably due to a bug
+                // in the audio driver
+                int counter = 0;
+                long startPos = getLongFramePosition();
+                bool posChanged = false;
+                while (!drained) {
+                    lock (lockNative) {
+                        if ((id.IsNull) || (!doIO) || !nIsStillDraining(id, isSource))
+                            break;
+                    }
+                    // check every now and then for a new position
+                    if ((counter % 5) == 4) {
+                        long thisFramePos = getLongFramePosition();
+                        posChanged = posChanged | (thisFramePos != startPos);
+                        if ((counter % 50) > 45) {
+                            // when some time elapsed, check that the frame position
+                            // really changed
+                            if (!posChanged) {
+                                if (Printer.err) Printer.Err("Native reports isDraining, but frame position does not increase!");
+                                break;
+                            }
+                            posChanged = false;
+                            startPos = thisFramePos;
+                        }
+                    }
+                    counter++;
+                    lock (m_lock) {
+                        try {
+                            Monitor.Wait(m_lock, 10);
+                        } catch (ThreadInterruptedException) { }
+                    }
+                }
+
+                if (doIO && !id.IsNull) {
+                    drained = true;
+                }
+                noService = false;
+            }
+
+            public override void flush() {
+                if (!id.IsNull) {
+                    // first stop ongoing read/write method
+                    flushing = true;
+                    lock (m_lock) {
+                        Monitor.PulseAll(m_lock);
+                    }
+                    lock (lockNative) {
+                        if (!id.IsNull) {
+                            // then flush native buffers
+                            nFlush(id, isSource);
+                        }
+                    }
+                    drained = true;
+                }
+            }
+
+            // replacement for getFramePosition (see AbstractDataLine)
+            public override long getLongFramePosition() {
+                long pos;
+                lock (lockNative) {
+                    pos = nGetBytePosition(id, isSource, Interlocked.Read(ref bytePosition));
+                }
+                // hack because ALSA sometimes reports wrong framepos
+                if (pos < 0) {
+                    pos = 0;
+                }
+                return (pos / getFormat().getFrameSize());
+            }
+
+            /*
+             * write() belongs into SourceDataLine and Clip,
+             * so define it here and make it accessible by
+             * declaring the respective interfaces with DirectSDL and DirectClip
+             */
+            public int write(byte[] b, int off, int len) {
+                flushing = false;
+                if (len == 0) {
+                    return 0;
+                }
+                if (len < 0) {
+                    throw new ArgumentException("illegal len: " + len);
+                }
+                if (len % getFormat().getFrameSize() != 0) {
+                    throw new ArgumentException("illegal request to write "
+                                       + "non-integral number of frames ("
+                                       + len + " bytes, "
+                                       + "frameSize = " + getFormat().getFrameSize() + " bytes)");
+                }
+                if (off < 0) {
+                    throw new ArgumentException(off.ToString(CultureInfo.InvariantCulture));
+                }
+                if ((long)off + (long)len > (long)b.Length) {
+                    throw new ArgumentException(b.Length.ToString(CultureInfo.InvariantCulture));
+                }
+
+                lock (m_lock) {
+                    if (!isActive() && doIO) {
+                        // this is not exactly correct... would be nicer
+                        // if the native sub system sent a callback when IO really
+                        // starts
+                        setActive(true);
+                        setStarted(true);
+                    }
+                }
+                int written = 0;
+                while (!flushing) {
+                    int thisWritten;
+                    lock (lockNative) {
+                        thisWritten = nWrite(id, b, off, len,
+                                softwareConversionSize,
+                                leftGain, rightGain);
+                        if (thisWritten < 0) {
+                            // error in native layer
+                            break;
+                        }
+                        Interlocked.Add(ref bytePosition, thisWritten); //a@ volatile
+                        if (thisWritten > 0) {
+                            drained = false;
+                        }
+                    }
+                    len -= thisWritten;
+                    written += thisWritten;
+                    if (doIO && len > 0) {
+                        off += thisWritten;
+                        lock (m_lock) {
+                            try {
+                                Monitor.Wait(m_lock, waitTime);
+                            } catch (ThreadInterruptedException) { }
+                        }
+                    } else {
+                        break;
+                    }
+                }
+                if (written > 0 && !doIO) {
+                    stoppedWritten = true;
+                }
+                return written;
+            }
+
+            protected internal virtual bool requiresServicing() {
+                return nRequiresServicing(id, isSource);
+            }
+
+            // called from event dispatcher for lines that need servicing
+            public void checkLine() {
+                lock (lockNative) {
+                    if (monitoring && doIO && !id.IsNull
+                        && !flushing && !noService) {
+                        nService(id, isSource);
+                    }
+                }
+            }
+
+            private void calcVolume() {
+                if (getFormat() == null) {
+                    return;
+                }
+                if (muteControl.getValue()) {
+                    leftGain = 0.0f;
+                    rightGain = 0.0f;
+                    return;
+                }
+                float gain = gainControl.getLinearGain();
+                if (getFormat().getChannels() == 1) {
+                    // trivial case: only use gain
+                    leftGain = gain;
+                    rightGain = gain;
+                } else {
+                    // need to combine gain and balance
+                    float bal = balanceControl.getValue();
+                    if (bal < 0.0f) {
+                        // left
+                        leftGain = gain;
+                        rightGain = gain * (bal + 1.0f);
+                    } else {
+                        leftGain = gain * (1.0f - bal);
+                        rightGain = gain;
+                    }
+                }
+            }
+
+            /////////////////// CONTROLS /////////////////////////////
+
+            protected internal sealed class Gain : FloatControl {
+
+                private DirectDL caller;
+                private float linearGain = 1.0f;
+
+                internal Gain(DirectDL caller)
+
+                    : base(FloatControl.Type.MASTER_GAIN,
+                          Toolkit.linearToDB(0.0f),
+                          Toolkit.linearToDB(2.0f),
+                          Math.Abs(Toolkit.linearToDB(1.0f) - Toolkit.linearToDB(0.0f)) / 128.0f,
+                          -1,
+                          0.0f,
+                          "dB", "Minimum", "", "Maximum") {
+                    this.caller = caller;
+                }
+
+                public override void setValue(float newValue) {
+                    // adjust value within range ?? spec says IllegalArgumentException
+                    //newValue = Math.min(newValue, getMaximum());
+                    //newValue = Math.max(newValue, getMinimum());
+
+                    float newLinearGain = Toolkit.dBToLinear(newValue);
+                    base.setValue(Toolkit.linearToDB(newLinearGain));
+                    // if no exception, commit to our new gain
+                    linearGain = newLinearGain;
+                    caller.calcVolume();
+                }
+
+                internal float getLinearGain() {
+                    return linearGain;
+                }
+            } // class Gain
+
+            private sealed class Mute : BooleanControl {
+                private DirectDL caller;
+
+                internal Mute(DirectDL caller)
+                    : base(BooleanControl.Type.MUTE, false, "True", "False") {
+                    this.caller = caller;
+                }
+
+                public override void setValue(bool newValue) {
+                    base.setValue(newValue);
+                    caller.calcVolume();
+                }
+            }  // class Mute
+
+            private sealed class Balance : FloatControl {
+                private DirectDL caller;
+
+                internal Balance(DirectDL caller)
+                    : base(FloatControl.Type.BALANCE, -1.0f, 1.0f, (1.0f / 128.0f), -1, 0.0f,
+                          "", "Left", "Center", "Right") {
+                    this.caller = caller;
+                }
+
+                public override void setValue(float newValue) {
+                    setValueImpl(newValue);
+                    caller.panControl.setValueImpl(newValue);
+                    caller.calcVolume();
+                }
+
+                internal void setValueImpl(float newValue) {
+                    base.setValue(newValue);
+                }
+
+            } // class Balance
+
+            private sealed class Pan : FloatControl {
+                private DirectDL caller;
+
+                internal Pan(DirectDL caller)
+                    : base(FloatControl.Type.PAN, -1.0f, 1.0f, (1.0f / 128.0f), -1, 0.0f,
+                          "", "Left", "Center", "Right") {
+                    this.caller = caller;
+                }
+
+                public override void setValue(float newValue) {
+                    setValueImpl(newValue);
+                    caller.balanceControl.setValueImpl(newValue);
+                    caller.calcVolume();
+                }
+
+                internal void setValueImpl(float newValue) {
+                    base.setValue(newValue);
+                }
+            } // class Pan
+        } // class DirectDL
+
+
+        /**
+         * Private inner class representing a SourceDataLine.
+         */
+        private sealed class DirectSDL : DirectDL, ISourceDataLine {
+
+            internal DirectSDL(DataLine.Info info,
+                              AudioFormat format,
+                              int bufferSize,
+                      DirectAudioDevice mixer)
+                : base(info, mixer, format, bufferSize, mixer.getMixerIndex(), mixer.getDeviceID(), true) {
+            }
+        }
+
+        /**
+         * Private inner class representing a TargetDataLine.
+         */
+        private sealed class DirectTDL : DirectDL, ITargetDataLine {
+
+            internal DirectTDL(DataLine.Info info,
+                              AudioFormat format,
+                              int bufferSize,
+                      DirectAudioDevice mixer)
+                : base(info, mixer, format, bufferSize, mixer.getMixerIndex(), mixer.getDeviceID(), false) {
+            }
+
+            public int read(byte[] b, int off, int len) {
+                flushing = false;
+                if (len == 0) {
+                    return 0;
+                }
+                if (len < 0) {
+                    throw new ArgumentException("illegal len: " + len);
+                }
+                if (len % getFormat().getFrameSize() != 0) {
+                    throw new ArgumentException("illegal request to read "
+                                       + "non-integral number of frames ("
+                                       + len + " bytes, "
+                                       + "frameSize = " + getFormat().getFrameSize() + " bytes)");
+                }
+                if (off < 0) {
+                    throw new ArgumentException(off.ToString(CultureInfo.InvariantCulture));
+                }
+                if ((long)off + (long)len > (long)b.Length) {
+                    throw new ArgumentException(b.Length.ToString(CultureInfo.InvariantCulture));
+                }
+                lock (m_lock) {
+                    if (!isActive() && doIO) {
+                        // this is not exactly correct... would be nicer
+                        // if the native sub system sent a callback when IO really
+                        // starts
+                        setActive(true);
+                        setStarted(true);
+                    }
+                }
+                int read = 0;
+                while (doIO && !flushing) {
+                    int thisRead;
+                    lock (lockNative) {
+                        thisRead = nRead(id, b, off, len, softwareConversionSize);
+                        if (thisRead < 0) {
+                            // error in native layer
+                            break;
+                        }
+                        Interlocked.Add(ref bytePosition, thisRead); //a@ volatile
+                        if (thisRead > 0) {
+                            drained = false;
+                        }
+                    }
+                    len -= thisRead;
+                    read += thisRead;
+                    if (len > 0) {
+                        off += thisRead;
+                        lock (m_lock) {
+                            try {
+                                Monitor.Wait(m_lock, waitTime);
+                            } catch (ThreadInterruptedException) { }
+                        }
+                    } else {
+                        break;
+                    }
+                }
+                if (flushing) {
+                    read = 0;
+                }
+                return read;
+            }
+        }
+
+        /**
+         * Private inner class representing a Clip
+         * This clip is realized in software only
+         */
+        private sealed class DirectClip : DirectDL, IClip, IRunnable, IAutoClosingClip {
+            private volatile Thread thread;
+            private volatile byte[] audioData;
+            private volatile int frameSize;         // size of one frame in bytes
+            private volatile int m_lengthInFrames;
+            private volatile int loopCount;
+            private volatile int clipBytePosition;   // index in the audioData array at current playback
+            private volatile int newFramePosition;   // set in setFramePosition()
+            private volatile int loopStartFrame;
+            private volatile int loopEndFrame;      // the last sample included in the loop
+
+            // auto closing clip support
+            private bool autoclosing = false;
+
+            internal DirectClip(DataLine.Info info,
+                               AudioFormat format,
+                               int bufferSize,
+                       DirectAudioDevice mixer)
+                : base(info, mixer, format, bufferSize, mixer.getMixerIndex(), mixer.getDeviceID(), true) {
+            }
+
+            // CLIP METHODS
+
+            public void open(AudioFormat format, byte[] data, int offset, int bufferSize) {
+
+                // $$fb part of fix for 4679187: Clip.open() throws unexpected Exceptions
+                Toolkit.isFullySpecifiedAudioFormat(format);
+                Toolkit.validateBuffer(format.getFrameSize(), bufferSize);
+
+                byte[] newData = new byte[bufferSize];
+                Array.Copy(data, offset, newData, 0, bufferSize);
+                open(format, newData, bufferSize / format.getFrameSize());
+            }
+
+            // this method does not copy the data array
+            private void open(AudioFormat format, byte[] data, int frameLength) {
+
+                // $$fb part of fix for 4679187: Clip.open() throws unexpected Exceptions
+                Toolkit.isFullySpecifiedAudioFormat(format);
+
+                lock (mixer) {
+                    if (isOpen()) {
+                        throw new InvalidOperationException("Clip is already open with format " + getFormat() +
+                                        " and frame length of " + getFrameLength()); //IllegalStateException
+                    } else {
+                        // if the line is not currently open, try to open it with this format and buffer size
+                        this.audioData = data;
+                        this.frameSize = format.getFrameSize();
+                        this.m_lengthInFrames = frameLength;
+                        // initialize loop selection with full range
+                        Interlocked.Exchange(ref bytePosition, 0);
+                        clipBytePosition = 0;
+                        newFramePosition = -1; // means: do not set to a new readFramePos
+                        loopStartFrame = 0;
+                        loopEndFrame = frameLength - 1;
+                        loopCount = 0; // means: play the clip irrespective of loop points from beginning to end
+
+                        try {
+                            // use DirectDL's open method to open it
+                            open(format, (int)Toolkit.millis2bytes(format, CLIP_BUFFER_TIME)); // one second buffer
+                        } catch (Exception ex) {
+                            if (ex is LineUnavailableException || ex is ArgumentException) {
+                                audioData = null;
+                            }
+                            throw;
+                        }
+
+                        // if we got this far, we can instantiate the thread
+                        ThreadPriority priority = ThreadPriority.AboveNormal;
+                        //Thread.NORM_PRIORITY
+                        //+ (Thread.MAX_PRIORITY - Thread.NORM_PRIORITY) / 3;
+                        thread = JSSecurityManager.createThread(this.run,
+                                            "Direct Clip", // name
+                                            true,     // daemon
+                                            priority, // priority
+                                            false);  // doStart
+                        // cannot start in createThread, because the thread
+                        // uses the "thread" variable as indicator if it should
+                        // continue to run
+                        thread.Start();
+                    }
+                }
+                if (isAutoClosing()) {
+                    getEventDispatcher().autoClosingClipOpened(this);
+                }
+            }
+
+            public void open(AudioInputStream stream) {
+
+                // $$fb part of fix for 4679187: Clip.open() throws unexpected Exceptions
+                Toolkit.isFullySpecifiedAudioFormat(stream.getFormat());
+
+                lock (mixer) {
+                    byte[] streamData = null;
+
+                    if (isOpen()) {
+                        throw new InvalidOperationException("Clip is already open with format " + getFormat() +
+                                        " and frame length of " + getFrameLength()); //IllegalStateException
+                    }
+                    int lengthInFrames = (int)stream.getFrameLength();
+
+                    int bytesRead = 0;
+                    int frameSize = stream.getFormat().getFrameSize();
+                    if (lengthInFrames != AudioSystem.NOT_SPECIFIED) {
+                        // read the data from the stream into an array in one fell swoop.
+                        int arraysize = lengthInFrames * frameSize;
+                        if (arraysize < 0) {
+                            throw new ArgumentException("Audio data < 0");
+                        }
+                        try {
+                            streamData = new byte[arraysize];
+                        } catch (OutOfMemoryException) {
+                            throw new IOException("Audio data is too big");
+                        }
+                        int bytesRemaining = arraysize;
+                        int thisRead = 0;
+                        while (bytesRemaining > 0 && thisRead > 0) { //a@
+                            thisRead = stream.Read(streamData, bytesRead, bytesRemaining);
+                            if (thisRead > 0) {
+                                bytesRead += thisRead;
+                                bytesRemaining -= thisRead;
+                            } else if (thisRead == 0) {
+                                //Thread.Sleep(0);
+                                Thread.Yield();
+                            }
+                        }
+                    } else {
+                        // read data from the stream until we reach the end of the stream
+                        // we use a slightly modified version of ByteArrayOutputStream
+                        // to get direct access to the byte array (we don't want a new array
+                        // to be allocated)
+                        int maxReadLimit = Math.Max(16384, frameSize);
+                        DirectBAOS dbaos = new DirectBAOS();
+                        byte[] tmp = new byte[0];
+                        try {
+                            tmp = new byte[maxReadLimit];
+                        } catch (OutOfMemoryException) {
+                            throw new IOException("Audio data is too big");
+                        }
+                        int thisRead = 0;
+                        while (thisRead >= 0) {
+                            thisRead = stream.Read(tmp, 0, tmp.Length);
+                            if (thisRead > 0) {
+                                dbaos.Write(tmp, 0, thisRead);
+                                bytesRead += thisRead;
+                            } else if (thisRead == 0) {
+                                //Thread.Sleep(0);
+                                Thread.Yield();
+                            }
+                        } // while
+                        streamData = dbaos.getInternalBuffer();
+                    }
+                    lengthInFrames = bytesRead / frameSize;
+
+                    // now try to open the device
+                    open(stream.getFormat(), streamData, lengthInFrames);
+                } // synchronized
+            }
+
+            public int getFrameLength() {
+                return m_lengthInFrames;
+            }
+
+            public long getMicrosecondLength() {
+                return Toolkit.frames2micros(getFormat(), getFrameLength());
+            }
+
+            public void setFramePosition(int frames) {
+                if (frames < 0) {
+                    frames = 0;
+                } else if (frames >= getFrameLength()) {
+                    frames = getFrameLength();
+                }
+                if (doIO) {
+                    newFramePosition = frames;
+                } else {
+                    clipBytePosition = frames * frameSize;
+                    newFramePosition = -1;
+                }
+                // fix for failing test050
+                // $$fb although getFramePosition should return the number of rendered
+                // frames, it is intuitive that setFramePosition will modify that
+                // value.
+                Interlocked.Exchange(ref bytePosition, frames * frameSize);
+
+                // cease currently playing buffer
+                flush();
+
+                // set new native position (if necessary)
+                // this must come after the flush!
+                lock (lockNative) {
+                    nSetBytePosition(id, isSource, frames * frameSize);
+                }
+            }
+
+            // replacement for getFramePosition (see AbstractDataLine)
+            public override long getLongFramePosition() {
+                /* $$fb
+                 * this would be intuitive, but the definition of getFramePosition
+                 * is the number of frames rendered since opening the device...
+                 * That also means that setFramePosition() means something very
+                 * different from getFramePosition() for Clip.
+                 */
+                // take into account the case that a new position was set...
+                //if (!doIO && newFramePosition >= 0) {
+                //return newFramePosition;
+                //}
+                return base.getLongFramePosition();
+            }
+
+            public void setMicrosecondPosition(long microseconds) {
+                long frames = Toolkit.micros2frames(getFormat(), microseconds);
+                setFramePosition((int)frames);
+            }
+
+            public void setLoopPoints(int start, int end) {
+                if (start < 0 || start >= getFrameLength()) {
+                    throw new ArgumentException("illegal value for start: " + start);
+                }
+                if (end >= getFrameLength()) {
+                    throw new ArgumentException("illegal value for end: " + end);
+                }
+
+                if (end == -1) {
+                    end = getFrameLength() - 1;
+                    if (end < 0) {
+                        end = 0;
+                    }
+                }
+
+                // if the end position is less than the start position, throw IllegalArgumentException
+                if (end < start) {
+                    throw new ArgumentException("End position " + end + "  precedes start position " + start);
+                }
+
+                // slight race condition with the run() method, but not a big problem
+                loopStartFrame = start;
+                loopEndFrame = end;
+            }
+
+            public void loop(int count) {
+                // note: when count reaches 0, it means that the entire clip
+                // will be played, i.e. it will play past the loop end point
+                loopCount = count;
+                start();
+            }
+
+            public override void implOpen(AudioFormat format, int bufferSize) {
+                // only if audioData wasn't set in a calling open(format, byte[], frameSize)
+                // this call is allowed.
+                if (audioData == null) {
+                    throw new ArgumentException("illegal call to open() in interface Clip");
+                }
+                base.implOpen(format, bufferSize);
+            }
+
+            public override void implClose() {
+                // dispose of thread
+                Thread oldThread = thread;
+                thread = null;
+                doIO = false;
+                if (oldThread != null) {
+                    // wake up the thread if it's in wait()
+                    lock (m_lock) {
+                        Monitor.PulseAll(m_lock);
+                    }
+                    // wait for the thread to terminate itself,
+                    // but max. 2 seconds. Must not be synchronized!
+                    try {
+                        oldThread.Join(2000);
+                    } catch (ThreadInterruptedException) { }
+                }
+                base.implClose();
+                // remove audioData reference and hand it over to gc
+                audioData = null;
+                newFramePosition = -1;
+
+                // remove this instance from the list of auto closing clips
+                getEventDispatcher().autoClosingClipClosed(this);
+            }
+
+            public override void implStart() {
+                base.implStart();
+            }
+
+            public override void implStop() {
+                base.implStop();
+                // reset loopCount field so that playback will be normal with
+                // next call to start()
+                loopCount = 0;
+            }
+
+            // main playback loop
+            public void run() {
+                Thread curThread = Thread.CurrentThread;
+                while (thread == curThread) {
+                    // doIO is volatile, but we could check it, then get
+                    // pre-empted while another thread changes doIO and notifies,
+                    // before we wait (so we sleep in wait forever).
+                    lock (m_lock) {
+                        if (!doIO && thread == curThread) {
+                            try {
+                                Monitor.Wait(m_lock);
+                            } catch (ThreadInterruptedException) {
+                            }
+                        }
+                    }
+                    while (doIO && thread == curThread) {
+                        int npf = newFramePosition; // copy into local variable
+                        if (npf >= 0) {
+                            clipBytePosition = npf * frameSize;
+                            newFramePosition = -1;
+                        }
+                        int endFrame = getFrameLength() - 1;
+                        if (loopCount > 0 || loopCount == Clip.LOOP_CONTINUOUSLY) {
+                            endFrame = loopEndFrame;
+                        }
+                        long framePos = (clipBytePosition / frameSize);
+                        int toWriteFrames = (int)(endFrame - framePos + 1);
+                        int toWriteBytes = toWriteFrames * frameSize;
+                        if (toWriteBytes > getBufferSize()) {
+                            toWriteBytes = Toolkit.align(getBufferSize(), frameSize);
+                        }
+                        int written = write(audioData, clipBytePosition, toWriteBytes); // increases bytePosition
+                        clipBytePosition += written;
+                        // make sure nobody called setFramePosition, or stop() during the write() call
+                        if (doIO && newFramePosition < 0 && written >= 0) {
+                            framePos = clipBytePosition / frameSize;
+                            // since endFrame is the last frame to be played,
+                            // framePos is after endFrame when all frames, including framePos,
+                            // are played.
+                            if (framePos > endFrame) {
+                                // at end of playback. If looping is on, loop back to the beginning.
+                                if (loopCount > 0 || loopCount == Clip.LOOP_CONTINUOUSLY) {
+                                    if (loopCount != Clip.LOOP_CONTINUOUSLY) {
+                                        loopCount--;
+                                    }
+                                    newFramePosition = loopStartFrame;
+                                } else {
+                                    // no looping, stop playback
+                                    drain();
+                                    stop();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // AUTO CLOSING CLIP SUPPORT
+
+            /* $$mp 2003-10-01
+               The following two methods are common between this class and
+               MixerClip. They should be moved to a base class, together
+               with the instance variable 'autoclosing'. */
+
+            public bool isAutoClosing() {
+                return autoclosing;
+            }
+
+            public void setAutoClosing(bool value) {
+                if (value != autoclosing) {
+                    if (isOpen()) {
+                        if (value) {
+                            getEventDispatcher().autoClosingClipOpened(this);
+                        } else {
+                            getEventDispatcher().autoClosingClipClosed(this);
+                        }
+                    }
+                    autoclosing = value;
+                }
+            }
+
+            protected internal override bool requiresServicing() {
+                // no need for servicing for Clips
+                return false;
+            }
+
+        } // DirectClip
+
+        /*
+         * private inner class representing a ByteArrayOutputStream
+         * which allows retrieval of the internal array
+         */
+        private class DirectBAOS : MemoryStream {
+            internal DirectBAOS()
+                : base() {
+            }
+
+            public byte[] getInternalBuffer() {
+                return GetBuffer(); // buf;
+            }
+
+        } // class DirectBAOS
+
+#if NoNative
+        //Object = DAUDIO_Info
+        private static void nGetFormats(int mixerIndex, int deviceID,
+                           bool isSource, IList<AudioFormat> formats) { ; } //Vector
+        //DAUDIO_Info
+        private static Object nOpen(int mixerIndex, int deviceID, bool isSource,
+                         int encoding,
+                         float sampleRate,
+                         int sampleSizeInBits,
+                         int frameSize,
+                         int channels,
+                         bool signed,
+                         bool bigEndian,
+                         int bufferSize) { return null; }
+        private static void nStart(Object id, bool isSource) { ; }
+        private static void nStop(Object id, bool isSource) { ; }
+        private static void nClose(Object id, bool isSource) { ; }
+        private static int nWrite(Object id, byte[] b, int off, int len, int conversionSize,
+                                         float volLeft, float volRight) { return 0; }
+        private static int nRead(Object id, byte[] b, int off, int len, int conversionSize) { return 0; }
+        private static int nGetBufferSize(Object id, bool isSource) { return 0; }
+        private static bool nIsStillDraining(Object id, bool isSource) { return false; }
+        private static void nFlush(Object id, bool isSource) { ; }
+        private static int nAvailable(Object id, bool isSource) { return 0; }
+        // javaPos is number of bytes read/written in Java layer
+        private static long nGetBytePosition(Object id, bool isSource, long javaPos) { return 0; }
+        private static void nSetBytePosition(Object id, bool isSource, long pos) { ; }
+
+        // returns if the native implementation needs regular calls to nService()
+        private static bool nRequiresServicing(Object id, bool isSource) { return false; }
+        // called in irregular intervals
+        private static void nService(Object id, bool isSource) { ; }
+#endif
+    }
+}
