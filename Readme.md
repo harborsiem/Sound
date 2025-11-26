@@ -1,9 +1,9 @@
 # Welcome to the .NET Sound Library!
 
-This is an implementation of the OpenJDK Java Sound Library ( > Version 8) for .NET Framework 4.6.2 and .NET8.
+This is an implementation of the OpenJDK Java Sound Library ( > Java Version 8) for .NET Framework 4.6.2 and .NET8.
 *.NET Sound* is available on NuGet, with Package Id *Sound*. For using the library Sound.dll you have two choices:
 
-1. You have to copy the native C and C++ components CSound.dll to your application *.exe folder to additional folders x86 and x64. You have to do this by copying the NuGet Package folders lib\dotnet_version\x86  and  lib\dotnet_version\x64.
+1. You have to copy the native C and C++ components CSound.dll to your application ".exe" folder to additional folders x86 and x64. You have to do this by copying the NuGet Package folders lib\dotnet_version\x86  and  lib\dotnet_version\x64.
 > !Note:  
 > dotnet_version is 4.6.2 for .NET Framework 4.6.2
 > dotnet_version is 8.0 for .NET8.
@@ -14,7 +14,9 @@ This is an implementation of the OpenJDK Java Sound Library ( > Version 8) for .
 
 ### Using the .NET Sound
 
-If you need low level functions for Audio or Midi like they are supported in the OpenJDK Java, then you are in the right project. You can use the documentation of the Java Sound Library (see links below). The differences to the Java Sound Library are shown later. The namespaces in the .NET Sound-library are ***SystemX.Sound.Sampled***, ***SystemX.Sound.Midi*** and ***SystemX.Media.Sound*** which are similar to the Java packages ***javax.sound.sampled***, ***javax.sound.midi*** and ***com.sun.media.sound***.
+If you need low level functions for Audio or Midi like they are supported in the OpenJDK Java, then you are in the right project. You can use the documentation of the Java Sound Library (see links below). The differences to the Java Sound Library are shown later. The namespaces in the .NET Sound-library are ***SystemX.Sound.Sampled***, ***SystemX.Sound.Midi*** and ***SystemX.Media.Sound*** which are similar to the Java packages ***javax.sound.sampled***, ***javax.sound.midi*** and ***com.sun.media.sound***. Classes and Interfaces with namespace ***SystemX.Media.Sound*** should not be used directly, because results are unpredictable.
+
+For configuration .NET Sound Library you can use a *sound.config* file in the application ".exe" folder. *sound.config* file is similar to java *sound.properties* file.
 
 ### Some links to Java Sound:
 
@@ -89,7 +91,6 @@ Differences in Naming of methods (maybe there are some more):
 ### Necessary installations for building:
 
 Visual Studio 2022 Community Edition (C++ must be installed !)
-WiX Toolset v3.14 (WIX 3.14)
 WiX Toolset Visual Studio 2022 Extension
 
 Project Sound is build with Visual Studio 2022 Community Edition C#
