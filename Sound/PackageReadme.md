@@ -1,12 +1,13 @@
 # Welcome to the .NET Sound Library!
 
-This is an implementation of the OpenJDK Java Sound Library ( > Version 8) for .NET Framework 4.6.2 and .NET8.
+This is an implementation of the OpenJDK Java Sound Library ( > Version 8) for .NET Framework 4.6.2 and .NET8 and later versions.
 *.NET Sound* is available on NuGet, with Package Id *Sound*. For using the library Sound.dll you have two choices:
 
-1. You have to copy the native C and C++ components CSound.dll to your application *.exe folder to additional folders x86 and x64. You have to do this by copying the NuGet Package folders lib\dotnet_version\x86  and  lib\dotnet_version\x64.
+1. Download Nuget-Package *Sound* and unzip the package (e.g. by 7-Zip).
+You have to copy the native C and C++ components CSound.dll to your application .exe folder to additional folders x86 and x64. You have to do this by copying the NuGet Package folders lib\dotnet_version\x86  and  lib\dotnet_version\x64.
 > !Note:  
-> dotnet_version is 4.6.2 for .NET Framework 4.6.2
-> dotnet_version is 8.0 for .NET8.
+> dotnet_version is net462 for .NET Framework 4.6.2
+> dotnet_version is net8.0 for .NET8.0
 >
 > This choice will be the best solution
 

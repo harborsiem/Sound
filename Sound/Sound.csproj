@@ -75,30 +75,62 @@
   <ItemGroup>
     <Content Include="..\CSound\Release\CSound.dll">
       <Pack>true</Pack>
-      <PackagePath>.\lib\x86\</PackagePath>
+      <PackagePath>.\lib\net8.0\x86\</PackagePath>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <PackageCopyToOutput>true</PackageCopyToOutput>
-      <TargetPath>.\x86\CSound.dll</TargetPath>
+      <TargetPath>$(OutDir)x86\CSound.dll</TargetPath>
     </Content>
   </ItemGroup>
   
   <ItemGroup>
     <Content Include="..\CSound\x64\Release\CSound.dll">
       <Pack>true</Pack>
-      <PackagePath>.\lib\x64\</PackagePath>
+      <PackagePath>.\lib\net8.0\x64\</PackagePath>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <PackageCopyToOutput>true</PackageCopyToOutput>
-      <TargetPath>.\x64\CSound.dll</TargetPath>
+      <TargetPath>$(OutDir)x64\CSound.dll</TargetPath>
+    </Content>
+  </ItemGroup>
+  
+  <ItemGroup>
+    <Content Include="..\CSound\Release\CSound.dll">
+      <Pack>true</Pack>
+      <PackagePath>.\lib\net462\x86\</PackagePath>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <PackageCopyToOutput>true</PackageCopyToOutput>
+      <TargetPath>$(OutDir)x86\CSound.dll</TargetPath>
+    </Content>
+  </ItemGroup>
+  
+  <ItemGroup>
+    <Content Include="..\CSound\x64\Release\CSound.dll">
+      <Pack>true</Pack>
+      <PackagePath>.\lib\net462\x64\</PackagePath>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <PackageCopyToOutput>true</PackageCopyToOutput>
+      <TargetPath>$(OutDir)x64\CSound.dll</TargetPath>
     </Content>
   </ItemGroup>
   
   <ItemGroup>
     <Content Include="..\Sound\config\sound.config">
       <Pack>true</Pack>
-      <PackagePath>.\lib\</PackagePath>
+      <PackagePath>.\lib\net8.0\</PackagePath>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <PackageCopyToOutput>true</PackageCopyToOutput>
-      <TargetPath>sound.config</TargetPath>
+      <PackageFlatten>true</PackageFlatten>
+      <TargetPath>$(OutDir)sound.config</TargetPath>
+    </Content>
+  </ItemGroup>
+  
+  <ItemGroup>
+    <Content Include="..\Sound\config\sound.config">
+      <Pack>true</Pack>
+      <PackagePath>.\lib\net462\</PackagePath>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <PackageCopyToOutput>true</PackageCopyToOutput>
+      <PackageFlatten>true</PackageFlatten>
+      <TargetPath>$(OutDir)sound.config</TargetPath>
     </Content>
   </ItemGroup>
 
