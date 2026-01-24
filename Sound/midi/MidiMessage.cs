@@ -123,7 +123,7 @@ namespace SystemX.Sound.Midi {
          */
         protected internal virtual void setMessage(byte[] data, int length) {
             if (length < 0 || (length > 0 && length > data.Length)) {
-                throw new ArgumentException("length out of bounds: " + length, "length");
+                throw new ArgumentException("length out of bounds: " + length, nameof(length));
             }
             this.length = length;
 

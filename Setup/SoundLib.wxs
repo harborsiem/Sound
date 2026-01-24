@@ -1,5 +1,5 @@
 ﻿<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs" xmlns:ui="http://wixtoolset.org/schemas/v4/wxs/ui">
-  <Package Name="SoundLib" Language="1033" Version="25.0.0.0" Manufacturer="Harbor" UpgradeCode="{AAA36C46-C19C-4217-96E7-E97FAF3DA38C}" InstallerVersion="301" ProductCode="{7C97F4C4-7F72-4DBF-96B8-21C0C8D346EB}">
+  <Package Name="SoundLib" Language="1033" Version="25.0.1.0" Manufacturer="Harbor" UpgradeCode="{AAA36C46-C19C-4217-96E7-E97FAF3DA38C}" InstallerVersion="301" ProductCode="{EEC9FDF4-1E96-4C9D-9C65-6BDC4C67310F}">
     <SummaryInformation Description="Sound Library for .NET and .NET Framework 4" />
 
     <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />

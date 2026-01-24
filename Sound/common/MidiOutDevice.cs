@@ -27,7 +27,10 @@
 
 //package com.sun.media.sound;
 
-//import javax.sound.midi.*;
+//import javax.sound.midi.MidiMessage;
+//import javax.sound.midi.MidiUnavailableException;
+//import javax.sound.midi.Receiver;
+//import javax.sound.midi.ShortMessage;
 
 using System;
 using System.Collections.Generic;

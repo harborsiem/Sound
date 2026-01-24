@@ -25,8 +25,18 @@
 
 //package com.sun.media.sound;
 
-//import javax.sound.midi.*;
 //import java.util.ArrayList;
+
+//import javax.sound.midi.InvalidMidiDataException;
+//import javax.sound.midi.MetaMessage;
+//import javax.sound.midi.MidiDevice;
+//import javax.sound.midi.MidiEvent;
+//import javax.sound.midi.MidiMessage;
+//import javax.sound.midi.Sequence;
+//import javax.sound.midi.Track;
+
+//import static javax.sound.midi.SysexMessage.SPECIAL_SYSTEM_EXCLUSIVE;
+//import static javax.sound.midi.SysexMessage.SYSTEM_EXCLUSIVE;
 
 using System;
 using System.Collections.Generic;

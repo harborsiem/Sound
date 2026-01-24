@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1999, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1999, 2021, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -76,7 +76,7 @@ namespace SystemX.Media.Sound {
          * Protected helper method to read 64 bits and changing the order of
          * each bytes.
          * @return 32 bits swapped value.
-         * @exception IOException
+         * @throws IOException
          */
         internal int rllong(BigEndianBinaryReader dis) {
 
@@ -118,7 +118,7 @@ namespace SystemX.Media.Sound {
          * rlshort
          * Protected helper method to read 16 bits value. Swap high with low byte.
          * @return the swapped value.
-         * @exception IOException
+         * @throws IOException
          */
         internal short rlshort(BigEndianBinaryReader dis) {
 

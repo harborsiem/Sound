@@ -103,7 +103,7 @@ namespace SystemX.Media.Sound {
                 if (!id.IsNull) {
                     nClose(id);
                 }
-                id = new PortInfoPtr(IntPtr.Zero);
+                id = PortInfoPtr.Null;
             }
 
             // fill sourceLineInfo and targetLineInfos with copies of the ones in portInfos
@@ -156,7 +156,7 @@ namespace SystemX.Media.Sound {
         protected override void implClose() {
             // close the mixer device
             PortInfoPtr thisID = id;
-            id = new PortInfoPtr(IntPtr.Zero);
+            id = PortInfoPtr.Null;
             nClose(thisID);
             if (ports != null) {
                 for (int i = 0; i < ports.Length; i++) {

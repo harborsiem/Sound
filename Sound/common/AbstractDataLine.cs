@@ -108,13 +108,11 @@ namespace SystemX.Media.Sound {
         public void open(AudioFormat format, int bufferSize) {
             //$$fb 2001-10-09: Bug #4517739: avoiding deadlock by synchronizing to mixer !
             lock (mixer) {
-
                 // if the line is not currently open, try to open it with this format and buffer size
                 if (!isOpen()) {
                     // make sure that the format is specified correctly
                     // $$fb part of fix for 4679187: Clip.open() throws unexpected Exceptions
                     Toolkit.isFullySpecifiedAudioFormat(format);
-
                     // reserve mixer resources for this line
                     //mixer.open(this, format, bufferSize);
                     mixer.open(this);

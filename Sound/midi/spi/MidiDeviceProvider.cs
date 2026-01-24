@@ -25,6 +25,8 @@
 
 //package javax.sound.midi.spi;          
 
+//import java.util.Arrays;
+
 //import javax.sound.midi.MidiDevice;
 
 using System;

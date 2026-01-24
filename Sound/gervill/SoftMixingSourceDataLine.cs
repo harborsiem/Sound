@@ -141,10 +141,10 @@ namespace SystemX.Media.Sound {
                 throw new ArgumentException(
                         "Number of bytes does not represent an integral number of sample frames.");
             if (off < 0) {
-                throw new ArgumentException(off.ToString(CultureInfo.InvariantCulture));
+                throw new IndexOutOfRangeException(off.ToString(CultureInfo.InvariantCulture));
             }
             if ((long)off + (long)len > (long)b.Length) {
-                throw new ArgumentException(b.Length.ToString(CultureInfo.InvariantCulture));
+                throw new IndexOutOfRangeException(b.Length.ToString(CultureInfo.InvariantCulture));
             }
 
             byte[] buff = cycling_buffer;

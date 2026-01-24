@@ -25,6 +25,8 @@
 
 //package javax.sound.midi; 
 
+//import javax.sound.sampled.AudioInputStream;
+
 using System;
 using System.Collections.Generic;
 using System.Text;

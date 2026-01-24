@@ -25,10 +25,11 @@
 
 //package com.sun.media.sound;
 
-//import java.io.UnsupportedEncodingException;
 //import java.util.Arrays;
 
 //import javax.sound.midi.Patch;
+
+//import static java.nio.charset.StandardCharsets.US_ASCII;
 
 using System;
 using System.Collections.Generic;

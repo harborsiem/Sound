@@ -31,7 +31,18 @@
 //import java.io.IOException;
 //import java.util.Vector;
 
-//import javax.sound.sampled.*;
+//import javax.sound.sampled.AudioFormat;
+//import javax.sound.sampled.AudioInputStream;
+//import javax.sound.sampled.AudioSystem;
+//import javax.sound.sampled.BooleanControl;
+//import javax.sound.sampled.Clip;
+//import javax.sound.sampled.Control;
+//import javax.sound.sampled.DataLine;
+//import javax.sound.sampled.FloatControl;
+//import javax.sound.sampled.Line;
+//import javax.sound.sampled.LineUnavailableException;
+//import javax.sound.sampled.SourceDataLine;
+//import javax.sound.sampled.TargetDataLine;
 
 using System;
 using System.Collections.Generic;
@@ -663,10 +674,10 @@ namespace SystemX.Media.Sound {
                                        + "frameSize = " + getFormat().getFrameSize() + " bytes)");
                 }
                 if (off < 0) {
-                    throw new ArgumentException(off.ToString(CultureInfo.InvariantCulture));
+                    throw new IndexOutOfRangeException(off.ToString(CultureInfo.InvariantCulture));
                 }
                 if ((long)off + (long)len > (long)b.Length) {
-                    throw new ArgumentException(b.Length.ToString(CultureInfo.InvariantCulture));
+                    throw new IndexOutOfRangeException(b.Length.ToString(CultureInfo.InvariantCulture));
                 }
 
                 lock (m_lock) {
@@ -720,8 +731,11 @@ namespace SystemX.Media.Sound {
             // called from event dispatcher for lines that need servicing
             public void checkLine() {
                 lock (lockNative) {
-                    if (monitoring && doIO && !id.IsNull
-                        && !flushing && !noService) {
+                    if (monitoring
+                        && doIO
+                        && !id.IsNull
+                        && !flushing
+                        && !noService) {
                         nService(id, isSource);
                     }
                 }
@@ -888,10 +902,10 @@ namespace SystemX.Media.Sound {
                                        + "frameSize = " + getFormat().getFrameSize() + " bytes)");
                 }
                 if (off < 0) {
-                    throw new ArgumentException(off.ToString(CultureInfo.InvariantCulture));
+                    throw new IndexOutOfRangeException(off.ToString(CultureInfo.InvariantCulture));
                 }
                 if ((long)off + (long)len > (long)b.Length) {
-                    throw new ArgumentException(b.Length.ToString(CultureInfo.InvariantCulture));
+                    throw new IndexOutOfRangeException(b.Length.ToString(CultureInfo.InvariantCulture));
                 }
                 lock (m_lock) {
                     if (!isActive() && doIO) {

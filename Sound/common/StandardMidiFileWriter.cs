@@ -25,21 +25,22 @@
 
 //package com.sun.media.sound;
 
-//import java.io.DataOutputStream;
-//import java.io.PipedInputStream;
-//import java.io.PipedOutputStream;
-//import java.io.ByteArrayOutputStream;
 //import java.io.ByteArrayInputStream;
-//import java.io.SequenceInputStream;
+//import java.io.ByteArrayOutputStream;
+//import java.io.DataOutputStream;
 //import java.io.File;
 //import java.io.FileOutputStream;
-//import java.io.InputStream;
 //import java.io.IOException;
+//import java.io.InputStream;
 //import java.io.OutputStream;
+//import java.io.PipedInputStream;
+//import java.io.PipedOutputStream;
+//import java.io.SequenceInputStream;
+//import java.util.Objects;
 
 //import javax.sound.midi.InvalidMidiDataException;
-//import javax.sound.midi.MidiEvent;
 //import javax.sound.midi.MetaMessage;
+//import javax.sound.midi.MidiEvent;
 //import javax.sound.midi.Sequence;
 //import javax.sound.midi.ShortMessage;
 //import javax.sound.midi.SysexMessage;

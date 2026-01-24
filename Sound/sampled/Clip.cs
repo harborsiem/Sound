@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1999, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1999, 2024, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -25,13 +25,11 @@
 
 //package javax.sound.sampled;
 
-//import java.io.InputStream;
 //import java.io.IOException;
 
 using System;
 using System.Collections.Generic;
 using System.Text;
-using System.Security;
 
 namespace SystemX.Sound.Sampled {
     public static class Clip {
@@ -97,8 +95,6 @@ namespace SystemX.Sound.Sampled {
          *         integral number of sample frames, or if {@code format} is not
          *         fully specified or invalid
          * @throws IllegalStateException if the line is already open
-         * @throws SecurityException if the line cannot be opened due to security
-         *         restrictions
          * @see #close
          * @see #isOpen
          * @see LineListener
@@ -128,8 +124,6 @@ namespace SystemX.Sound.Sampled {
          * @throws IllegalArgumentException if the stream's audio format is not
          *         fully specified or invalid
          * @throws IllegalStateException if the line is already open
-         * @throws SecurityException if the line cannot be opened due to security
-         *         restrictions
          * @see #close
          * @see #isOpen
          * @see LineListener

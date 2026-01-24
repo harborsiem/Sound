@@ -26,11 +26,14 @@
 //package com.sun.media.sound;
 
 //import java.io.IOException;
-
+//import java.util.ArrayList;
+//import java.util.Objects;
 
 //import javax.sound.sampled.AudioFormat;
+//import javax.sound.sampled.AudioFormat.Encoding;
 //import javax.sound.sampled.AudioInputStream;
 //import javax.sound.sampled.AudioSystem;
+//import javax.sound.sampled.spi.FormatConversionProvider;
 
 using System;
 using System.Collections.Generic;
@@ -312,16 +315,11 @@ namespace SystemX.Media.Sound {
                     formats.Add(format);
                 }
             }
-            AudioFormat[] formatArray;
+            AudioFormat[] formatArray = new AudioFormat[formats.Count];
 
-            lock (formats) {
+            for (int i = 0; i < formatArray.Length; i++) {
 
-                formatArray = new AudioFormat[formats.Count];
-
-                for (int i = 0; i < formatArray.Length; i++) {
-
-                    formatArray[i] = formats[i];
-                }
+                formatArray[i] = formats[i];
             }
 
             return formatArray;

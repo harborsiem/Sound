@@ -25,10 +25,13 @@
 
 //package com.sun.media.sound;       
 
-//import java.io.File;
-//import java.io.InputStream;
-//import java.io.IOException;
+//import java.io.BufferedInputStream;
 //import java.io.DataInputStream;
+//import java.io.EOFException;
+//import java.io.File;
+//import java.io.FileInputStream;
+//import java.io.IOException;
+//import java.io.InputStream;
 //import java.net.URL;
 
 //import javax.sound.sampled.AudioFileFormat;
@@ -174,7 +177,7 @@ namespace SystemX.Media.Sound {
          * each bytes. 
          * @param DataInputStream 
          * @return 32 bits swapped value. 
-         * @exception IOException
+         * @throws IOException
          */
         internal int rllong(BigEndianBinaryReader dis) {
 
@@ -218,7 +221,7 @@ namespace SystemX.Media.Sound {
          * Protected helper method to read 16 bits value. Swap high with low byte.
          * @param DataInputStream
          * @return the swapped value.
-         * @exception IOException
+         * @throws IOException
          */
         internal short rlshort(BigEndianBinaryReader dis) {
 

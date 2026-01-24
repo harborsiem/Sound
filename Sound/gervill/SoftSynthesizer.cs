@@ -25,6 +25,8 @@
 
 //package com.sun.media.sound;
 
+//import sun.awt.OSInfo;
+
 //import java.io.BufferedInputStream;
 //import java.io.File;
 //import java.io.FileInputStream;
@@ -34,8 +36,6 @@
 //import java.io.InputStream;
 //import java.io.OutputStream;
 //import java.lang.ref.WeakReference;
-//import java.security.AccessController;
-//import java.security.PrivilegedAction;
 //import java.util.ArrayList;
 //import java.util.Arrays;
 //import java.util.HashMap;

@@ -30,6 +30,7 @@
 //import java.io.IOException;
 //import java.io.InputStream;
 //import java.net.URL;
+//import java.util.Objects;
 
 //import javax.sound.sampled.AudioFormat;
 //import javax.sound.sampled.AudioInputStream;
@@ -87,7 +88,7 @@ namespace SystemX.Media.Sound {
                 if (b == null)
                     throw new ArgumentNullException(nameof(b));
                 if (off < 0 || len < 0 || len > b.Length - off)
-                    throw new ArgumentException("Parameter off or len are out of range");
+                    throw new IndexOutOfRangeException("Parameter off or len are out of range");
                 if (pos >= buffer_len)
                     return -1;
                 if (len == 0)

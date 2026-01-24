@@ -25,6 +25,8 @@
 
 //package javax.sound.midi;
 
+//import com.sun.media.sound.MidiUtils;
+
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -185,7 +187,7 @@ namespace SystemX.Sound.Midi {
          * @throws InvalidMidiDataException if the parameter values do not specify a
          *         valid MIDI system exclusive message
          */
-        protected internal override void setMessage(byte[] data, int length) {
+        public new virtual void setMessage(byte[] data, int length) {
             MidiUtils.checkSysexStatus(data, length);
             base.setMessage(data, length);
         }
@@ -202,7 +204,7 @@ namespace SystemX.Sound.Midi {
         public void setMessage(int status, byte[] data, int length) {
             MidiUtils.checkSysexStatus(status);
             if (length < 0 || length > data.Length) {
-                throw new ArgumentException("length out of bounds: " + length, "length");
+                throw new ArgumentException("length out of bounds: " + length, nameof(length));
             }
             this.length = length + 1;
 

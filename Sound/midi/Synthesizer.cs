@@ -344,7 +344,7 @@ namespace SystemX.Sound.Midi {
          *
          * @return receiver name
          */
-        // public abstract String getName();
+        //  abstract String getName();
 
         /**
          * Opens the receiver.
@@ -352,12 +352,12 @@ namespace SystemX.Sound.Midi {
          * @throws MidiUnavailableException if the receiver is cannot be opened,
          *         usually because the MIDI device is in use by another application
          */
-        //  public abstract void open();
+        //  abstract void open();
 
         /**
          * Closes the receiver.
          */
-        //  void close();
+        //  abstract void close();
 
         /**
          * Sends a MIDI event to the receiver.

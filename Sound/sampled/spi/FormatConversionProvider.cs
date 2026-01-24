@@ -25,10 +25,12 @@
 
 //package javax.sound.sampled.spi;
 
-//import java.io.InputStream;
+//import java.util.Arrays;
 
 //import javax.sound.sampled.AudioFormat;
 //import javax.sound.sampled.AudioInputStream;
+
+//import static javax.sound.sampled.AudioFormat.Encoding;
 
 using System;
 using System.Collections.Generic;

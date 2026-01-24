@@ -24,7 +24,7 @@
 
     <PackageId>Sound</PackageId>
     <Product>.NET Sound Library</Product>
-    <Version>25.0.0</Version>
+    <Version>25.0.1</Version>
     <AssemblyVersion>25.0.0</AssemblyVersion>
     <Authors>Hartmut Borkenhagen</Authors>
     <Company>Harborsiem</Company>
@@ -140,6 +140,7 @@
 
   <ItemGroup>
     <Compile Remove="common\JavaSoundAudioClipDelegate.cs" />
+    <Compile Remove="engine\Platform.Native.cs" />
   </ItemGroup>
   
   <ItemGroup Condition="'$(TargetFramework)'=='net462'">
@@ -155,7 +156,7 @@
   </ItemGroup>
 
   <PropertyGroup>
-    <MicrosoftWindowsCsWin32PackageVersion>0.3.252</MicrosoftWindowsCsWin32PackageVersion>
+    <MicrosoftWindowsCsWin32PackageVersion>0.3.269</MicrosoftWindowsCsWin32PackageVersion>
   </PropertyGroup>
 
   <ItemGroup>

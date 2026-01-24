@@ -28,6 +28,7 @@
 //import java.util.Collections;
 //import java.util.HashMap;
 //import java.util.Map;
+//import java.util.Objects;
 
 using System;
 using System.Collections.Generic;
@@ -417,7 +418,9 @@ namespace SystemX.Sound.Sampled {
             if (_properties == null) {
                 return null;
             }
-            return _properties[key];
+            if (_properties.ContainsKey(key))
+                return _properties[key];
+            return null;
         }
 
         /**

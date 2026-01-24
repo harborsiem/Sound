@@ -24,22 +24,16 @@
  */
 //package com.sun.media.sound;
 
-//import java.io.BufferedInputStream;
-//import java.io.File;
-//import java.io.FileInputStream;
 //import java.io.IOException;
 //import java.io.InputStream;
-//import java.net.URL;
 //import java.util.HashMap;
 //import java.util.Map;
 
 //import javax.sound.sampled.AudioFileFormat;
 //import javax.sound.sampled.AudioFormat;
-//import javax.sound.sampled.AudioInputStream;
-//import javax.sound.sampled.AudioSystem;
-//import javax.sound.sampled.UnsupportedAudioFileException;
 //import javax.sound.sampled.AudioFormat.Encoding;
-//import javax.sound.sampled.spi.AudioFileReader;
+//import javax.sound.sampled.AudioInputStream;
+//import javax.sound.sampled.UnsupportedAudioFileException;
 
 using System;
 using System.Collections.Generic;

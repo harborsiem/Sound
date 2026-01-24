@@ -33,6 +33,7 @@
 
 //import javax.sound.midi.InvalidMidiDataException;
 //import javax.sound.midi.Soundbank;
+//import javax.sound.midi.Synthesizer;
 
 using System;
 using System.Collections.Generic;

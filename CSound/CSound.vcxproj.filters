@@ -107,9 +107,6 @@
     <ClCompile Include=".\Share\PortMixer.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Share\Platform.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="CSound.rc">

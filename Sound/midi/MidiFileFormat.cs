@@ -35,57 +35,57 @@ using System.Text;
 using SystemX.Addon;
 
 namespace SystemX.Sound.Midi {
-/**
- * A {@code MidiFileFormat} object encapsulates a MIDI file's type, as well as
- * its length and timing information.
- * <p>
- * A {@code MidiFileFormat} object can include a set of properties. A property
- * is a pair of key and value: the key is of type {@code String}, the associated
- * property value is an arbitrary object. Properties specify additional
- * informational meta data (like a author, or copyright). Properties are
- * optional information, and file reader and file writer implementations are not
- * required to provide or recognize properties.
- * <p>
- * The following table lists some common properties that should be used in
- * implementations:
- *
- * <table class="striped">
- * <caption>MIDI File Format Properties</caption>
- * <thead>
- *   <tr>
- *     <th scope="col">Property key
- *     <th scope="col">Value type
- *     <th scope="col">Description
- * </thead>
- * <tbody>
- *   <tr>
- *     <th scope="row">"author"
- *     <td>{@link String String}
- *     <td>name of the author of this file
- *   <tr>
- *     <th scope="row">"title"
- *     <td>{@link String String}
- *     <td>title of this file
- *   <tr>
- *     <th scope="row">"copyright"
- *     <td>{@link String String}
- *     <td>copyright message
- *   <tr>
- *     <th scope="row">"date"
- *     <td>{@link java.util.Date Date}
- *     <td>date of the recording or release
- *   <tr>
- *     <th scope="row">"comment"
- *     <td>{@link String String}
- *     <td>an arbitrary text
- * </tbody>
- * </table>
- *
- * @author Kara Kytle
- * @author Florian Bomers
- * @see MidiSystem#getMidiFileFormat(java.io.File)
- * @see Sequencer#setSequence(java.io.InputStream stream)
- */
+    /**
+     * A {@code MidiFileFormat} object encapsulates a MIDI file's type, as well as
+     * its length and timing information.
+     * <p>
+     * A {@code MidiFileFormat} object can include a set of properties. A property
+     * is a pair of key and value: the key is of type {@code String}, the associated
+     * property value is an arbitrary object. Properties specify additional
+     * informational meta data (like a author, or copyright). Properties are
+     * optional information, and file reader and file writer implementations are not
+     * required to provide or recognize properties.
+     * <p>
+     * The following table lists some common properties that should be used in
+     * implementations:
+     *
+     * <table class="striped">
+     * <caption>MIDI File Format Properties</caption>
+     * <thead>
+     *   <tr>
+     *     <th scope="col">Property key
+     *     <th scope="col">Value type
+     *     <th scope="col">Description
+     * </thead>
+     * <tbody>
+     *   <tr>
+     *     <th scope="row">"author"
+     *     <td>{@link String String}
+     *     <td>name of the author of this file
+     *   <tr>
+     *     <th scope="row">"title"
+     *     <td>{@link String String}
+     *     <td>title of this file
+     *   <tr>
+     *     <th scope="row">"copyright"
+     *     <td>{@link String String}
+     *     <td>copyright message
+     *   <tr>
+     *     <th scope="row">"date"
+     *     <td>{@link java.util.Date Date}
+     *     <td>date of the recording or release
+     *   <tr>
+     *     <th scope="row">"comment"
+     *     <td>{@link String String}
+     *     <td>an arbitrary text
+     * </tbody>
+     * </table>
+     *
+     * @author Kara Kytle
+     * @author Florian Bomers
+     * @see MidiSystem#getMidiFileFormat(java.io.File)
+     * @see Sequencer#setSequence(java.io.InputStream stream)
+     */
 
     public class MidiFileFormat {
 
@@ -287,7 +287,9 @@ namespace SystemX.Sound.Midi {
             if (_properties == null) {
                 return null;
             }
-            return _properties[key];
+            if (_properties.ContainsKey(key))
+                return _properties[key];
+            return null;
         }
     }
 }

@@ -25,13 +25,16 @@
 
 //package com.sun.media.sound;
 
+//import java.util.Objects;
+
 //import javax.sound.midi.MidiDevice;
 //import javax.sound.midi.spi.MidiDeviceProvider;
 
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Runtime.CompilerServices;
+using System.Text;
+using SystemX.Addon;
 using SystemX.Sound.Midi;
 
 namespace SystemX.Media.Sound {
@@ -128,6 +131,9 @@ namespace SystemX.Media.Sound {
         }
 
         public sealed override IMidiDevice getDevice(MidiDevice.Info info) {
+            if (info == null)
+                throw new ArgumentNullException(nameof(info));
+            //Objects.requireNonNull(info);
             if (info is Info) {
                 readDeviceInfos();
                 IMidiDevice[] devices = getDeviceCache();

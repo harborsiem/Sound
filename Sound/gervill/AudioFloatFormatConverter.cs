@@ -29,6 +29,7 @@
 //import java.io.InputStream;
 //import java.util.ArrayList;
 //import java.util.Arrays;
+//import java.util.Objects;
 
 //import javax.sound.sampled.AudioFormat;
 //import javax.sound.sampled.AudioFormat.Encoding;
@@ -61,7 +62,7 @@ namespace SystemX.Media.Sound {
 
             private float[] readfloatbuffer;
 
-            private readonly int fsize = 0;
+            private readonly int fsize;
 
             internal AudioFloatFormatConverterInputStream(AudioFormat targetFormat,
                                                           AudioFloatInputStream stream) {

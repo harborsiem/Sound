@@ -29,7 +29,14 @@
 //import java.util.Collections;
 //import java.util.List;
 
-//import javax.sound.midi.*;
+//import javax.sound.midi.InvalidMidiDataException;
+//import javax.sound.midi.MidiDevice;
+//import javax.sound.midi.MidiDeviceReceiver;
+//import javax.sound.midi.MidiDeviceTransmitter;
+//import javax.sound.midi.MidiMessage;
+//import javax.sound.midi.MidiUnavailableException;
+//import javax.sound.midi.Receiver;
+//import javax.sound.midi.Transmitter;
 
 using System;
 using System.Collections.Generic;
@@ -340,7 +347,7 @@ namespace SystemX.Media.Sound {
             return transmitter;
         }
 
-        /** Return the list of objects that have opened the device implicitely.
+        /** Return the list of objects that have opened the device implicitly.
          */
         [MethodImpl(MethodImplOptions.Synchronized)]
         private IList<Object> getOpenKeepingObjects() {

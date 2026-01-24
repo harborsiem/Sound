@@ -25,7 +25,8 @@
 
 //package com.sun.media.sound;
 
-//import javax.sound.midi.*;
+//import javax.sound.midi.InvalidMidiDataException;
+//import javax.sound.midi.SysexMessage;
 
 using System;
 using System.Collections.Generic;
@@ -55,7 +56,7 @@ namespace SystemX.Media.Sound {
 
         // overwrite this method so that the original data array,
         // which is shared among all transmitters, cannot be modified
-        protected internal override void setMessage(byte[] data, int length) {
+        public override void setMessage(byte[] data, int length) {
             MidiUtils.checkSysexStatus(data, data.Length);
             this.length = length;
             this.data = new byte[this.length];

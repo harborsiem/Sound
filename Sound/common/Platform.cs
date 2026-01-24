@@ -1,7 +1,7 @@
 #undef NoNative
 //#define NoNative
 /*
- * Copyright (c) 1999, 2024, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1999, 2026, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -29,8 +29,6 @@
 
 //package com.sun.media.sound;    
 
-//import java.security.AccessController;
-//import java.security.PrivilegedAction;
 //import java.util.StringTokenizer;
 
 using System;
@@ -58,12 +56,6 @@ namespace SystemX.Media.Sound
         private const String libName = "CSound.dll";
 
         private static bool isNativeLibLoaded;
-
-        // SYSTEM CHARACTERISTICS
-        // vary according to hardware architecture
-
-        // intel is little-endian.  sparc is big-endian.
-        private static bool bigEndian;
 
         static Platform() {
             //SetEnvironment();
@@ -99,7 +91,7 @@ namespace SystemX.Media.Sound
          * Determine whether the system is big-endian.
          */
         internal static bool isBigEndian() {
-            return bigEndian;
+            return !BitConverter.IsLittleEndian;
         }
 
         private static GCHandle soundDllHandle;
@@ -140,9 +132,6 @@ namespace SystemX.Media.Sound
                 if (Printer.err) Printer.Err("Couldn't load library " + libName + ": " + t.ToString());
                 isNativeLibLoaded = false;
             }
-            if (isNativeLibLoaded) {
-                bigEndian = nIsBigEndian();
-            }
         }
 
         public static bool isMidiIOEnabled() {
@@ -156,11 +145,6 @@ namespace SystemX.Media.Sound
         public static bool isDirectAudioEnabled() {
             return isNativeLibLoaded;
         }
-
-#if NoNative
-        // the following native methods are implemented in Platform.c
-        private static bool nIsBigEndian() { return !BitConverter.IsLittleEndian; } // false;
-#endif
 
 #pragma warning disable CA1416
 

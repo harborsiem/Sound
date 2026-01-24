@@ -100,7 +100,7 @@ namespace SystemX.Media.Sound {
          */
         public String subject = null;
         /**
-         * (ISRC) Name of person or orginization who supplied
+         * (ISRC) Name of person or organization who supplied
          *        original material for the file.
          */
         public String source = null;
