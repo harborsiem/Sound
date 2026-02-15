@@ -25,7 +25,7 @@
 
 //package com.sun.media.sound;
 
-//import java.io.EndOfStreamException;
+//import java.io.EOFException;
 //import java.io.IOException;
 //import java.io.InputStream;
 

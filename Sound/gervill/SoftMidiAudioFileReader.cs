@@ -25,7 +25,7 @@
 
 //package com.sun.media.sound;
 
-//import java.io.File;
+//import java.io.EOFException;
 //import java.io.IOException;
 //import java.io.InputStream;
 
@@ -38,7 +38,6 @@
 //import javax.sound.midi.Receiver;
 //import javax.sound.midi.Sequence;
 //import javax.sound.midi.Track;
-
 //import javax.sound.sampled.AudioFileFormat.Type;
 //import javax.sound.sampled.AudioFormat;
 //import javax.sound.sampled.AudioInputStream;
