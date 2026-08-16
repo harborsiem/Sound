@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
+	xmlns:netfx="http://schemas.microsoft.com/wix/NetFxExtension"
+	xmlns:WixUI="http://schemas.microsoft.com/wix/UIExtension">
+	<Product Id="{EEC9FDF4-1E96-4C9D-9C65-6BDC4C67310F}" Name="SoundLib" Language="1033" Version="25.0.1.0" Manufacturer="Harbor" UpgradeCode="{AAA36C46-C19C-4217-96E7-E97FAF3DA38C}">
+		<Package InstallerVersion="301" Compressed="yes" InstallScope="perMachine" Platform="x86" />
+
+		<MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
+		<Media Id="1" Cabinet="Data.cab" EmbedCab="yes" />
+
+		<Feature Id="ProductFeature" Title="Sound Setup for native components" Level="1">
+			<ComponentGroupRef Id="ProductComponents1" />
+			<ComponentGroupRef Id="ProductComponents2" />
+			<ComponentGroupRef Id="ProductComponents3" />
+		</Feature>
+
+		<UI />
+		<UIRef Id="WixUI_Minimal" />
+		<Property Id="ARPHELPLINK" Value="https://github.com/harborsiem/Sound" />
+		<Property Id="ARPCOMMENTS" Value="DOTNET Sound library" />
+		<Property Id="ARPURLUPDATEINFO" Value="https://github.com/harborsiem/Sound/releases" />
+		<Property Id="ARPNOREPAIR" Value="yes" />
+		<WixVariable Id="WixUILicenseRtf" Value="GPLv2_License.rtf" />
+	</Product>
+
+	<Fragment>
+		<Directory Id="TARGETDIR" Name="SourceDir">
+			<Directory Id="ProgramFilesFolder">
+			</Directory>
+			<Directory Id="WindowsFolder">
+        <Directory Id="Di.Microsoft.NET" Name="Microsoft.NET">
+          <Directory Id="Di.Sound" Name="Sound">
+            <Directory Id="Di.x86" Name="x86">
+            </Directory>
+            <Directory Id="Di.x64" Name="x64">
+            </Directory>
+          </Directory>
+        </Directory>
+			</Directory>
+		</Directory>
+	</Fragment>
+
+  <Fragment>
+    <ComponentGroup Id="ProductComponents1" Directory="Di.Sound">
+      <Component Id="C.Sound.config" DiskId="1" Guid="7268C72E-A902-409B-819D-D0122DE8B08D">
+        <File Id="Fi.Sound.config" Name="sound.config" Source="..\Sound\config\sound.config" />
+      </Component>
+    </ComponentGroup>
+  </Fragment>
+
+  <Fragment>
+    <ComponentGroup Id="ProductComponents2" Directory="Di.x86">
+      <Component Id="C.Sound_C_x86" Guid="C32441A7-C33D-481E-84AA-26133615A947">
+        <File Id="Fi.CSoundDllx86" Name="CSound.dll" Source="..\CSound\Release\CSound.dll" KeyPath="yes" />
+      </Component>
+    </ComponentGroup>
+    <ComponentGroup Id="ProductComponents3" Directory="Di.x64">
+      <Component Id="C.Sound_C_x64" Guid="{5237F02C-D31E-4577-B854-9D7AB46B72E7}">
+        <File Id="Fi.CSoundDllx64" Name="CSound.dll" Source="..\CSound\x64\Release\CSound.dll" KeyPath="yes" />
+      </Component>
+    </ComponentGroup>
+  </Fragment>
+</Wix>
